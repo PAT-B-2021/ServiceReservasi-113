@@ -16,13 +16,29 @@ namespace ServiceReservasi
             return string.Format("You entered: {0}", value);
         }*/
 
-        string constring = " Data Source= LAPTOP-3AAAJO1I; Initial Catalog=WCFTest; Persist Security Info= True; User ID= sa; Password=123";
+        string constring = "Data Source= LAPTOP-3AAAJO1I; Initial Catalog=WCFReservasi; Persist Security Info= True; User ID= sa; Password=123";
         SqlConnection connection;
         SqlCommand com;
 
         public string deletePemesanan(string IDPemesanan)
         {
-            throw new NotImplementedException();
+            string a = "gagal";
+            try
+            {
+                string sql = "delete from dbo.Pemesanan where id_reservasi = '"+IDPemesanan+"'";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
+                a = "Sukses";
+            }
+            catch (Exception es)
+            {
+                Console.WriteLine(es);
+            }
+            return a;
         }
 
         /*public CompositeType GetDataUsingDataContract(CompositeType composite)
@@ -67,9 +83,26 @@ namespace ServiceReservasi
             return LokasiFull;
         }
 
-        public string editPemesanan(string IDPemesanan, string NamaCustomer)
+        public string editPemesanan(string IDPemesanan, string NamaCustomer, string No_telpon)
         {
-            throw new NotImplementedException();
+            string a = "gagal";
+            try
+            {
+                string sql = "update into dbo.Pemesanan set nama_customer = '"+NamaCustomer+"', no_telepon = '"+No_telpon+"' " +
+                    " where id_reservasi = '"+IDPemesanan+"' ";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
+                a = "Sukses";
+            }
+            catch (Exception es)
+            {
+                Console.WriteLine(es);
+            }
+            return a;
         }
 
         public string pemesanan(string IDPemesanan, string NamaCustomer, string NoTelpon, int JumlahPemesanan, string IDLokasi)
@@ -83,6 +116,13 @@ namespace ServiceReservasi
                 connection.Open();
                 com.ExecuteNonQuery();
                 connection.Close();
+
+                string sql2 = "update dbo.Lokasi set kuota = kuota - " + JumlahPemesanan + " where id_lokasi = '" + IDLokasi + "' ";
+                com = new SqlCommand(sql2, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
                 a = "Sukses";
             }
             catch (Exception es)
@@ -94,7 +134,33 @@ namespace ServiceReservasi
 
         public List<Pemesanan> Pemesanan()
         {
-            throw new NotImplementedException();
+            List<Pemesanan> pemesanans = new List<Pemesanan>();
+            try
+            {
+                string sql = "select id_reservasi, nama_customer, no_telepon," +
+                    "jumlah_pemesanan, nama_lokasi from dbo.Pemesanan p join dbo.Lokasi l on p.id_lokasi = l.id_lokasi";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql, connection);
+                connection.Open();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    Pemesanan data = new Pemesanan();
+
+                    data.IDPemesanan = reader.GetString(0);
+                    data.NamaCustomer = reader.GetString(1);
+                    data.NoTelpon = reader.GetString(2);
+                    data.JumlahPemesanan = reader.GetInt32(3);
+                    data.Lokasi = reader.GetString(4);
+                    pemesanans.Add(data);
+                }
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return pemesanans;
         }
 
         public List<CekLokasi> ReviewLokasi()
