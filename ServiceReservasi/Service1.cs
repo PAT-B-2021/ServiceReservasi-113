@@ -11,14 +11,129 @@ namespace ServiceReservasi
     // NOTE: You can use the "Rename" command on the "Refactor" menu to change the class name "Service1" in both code and config file together.
     public class Service1 : IService1
     {
-       /* public string GetData(int value)
-        {
-            return string.Format("You entered: {0}", value);
-        }*/
-
+       
         string constring = "Data Source= LAPTOP-3AAAJO1I; Initial Catalog=WCFReservasi; Persist Security Info= True; User ID= sa; Password=123";
         SqlConnection connection;
         SqlCommand com;
+
+
+        public string Login(string username, string password)
+        {
+            string kategori = "";
+
+            string sql = "select kategori from Login where username ='" + username + "' and password = '"+ password +"' ";
+            connection = new SqlConnection(constring);
+            com = new SqlCommand(sql, connection);
+            connection.Open();
+            SqlDataReader reader = com.ExecuteReader();
+            while (reader.Read())
+            {
+                kategori = reader.GetString(0);
+            }
+
+            return kategori;
+        }
+
+        public string Register(string username, string password, string kategori)
+        {
+            try
+            {
+                string sql = "insert into Login values('" + username + "', '" + password + "', '" + kategori + "') ";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
+                return "sukses";
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+            
+        }
+
+        public string UpdateRegister(string username, string password, string kategori, int id)
+        {
+            try
+            {
+                string sql2 = "update Login SET username='" + username + "', password= '" + password + "', kategori= '" + kategori + "' ";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql2, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
+                return "sukses";
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+        }
+
+        public string DeleteRegister(string username)
+        {
+            try
+            {
+                int id = 0;
+                string sql = "select id_login from dbo.Login where username ='" + username + "' ";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql, connection);
+                connection.Open();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    id = reader.GetInt32(0);
+                }
+                connection.Close();
+
+                string sql2 = "delete from dbo.Login where id_login = '" + id + "' ";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql2, connection);
+                connection.Open();
+                com.ExecuteNonQuery();
+                connection.Close();
+
+                return "sukses";
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+        }
+
+        public List<DataRegister> DataRegist()
+        {
+            List<DataRegister> list = new List<DataRegister>();
+            try
+            {
+                string sql = "select id_login, username, password, kategori from Login";
+                connection = new SqlConnection(constring);
+                com = new SqlCommand(sql, connection);
+                connection.Open();
+                SqlDataReader reader = com.ExecuteReader();
+                while (reader.Read())
+                {
+                    DataRegister data = new DataRegister();
+                    data.id = reader.GetInt32(0);
+                    data.username = reader.GetString(1);
+                    data.password = reader.GetString(2);
+                    data.kategori = reader.GetString(3);
+                    list.Add(data);
+                }
+                connection.Close();
+
+            }
+            catch (Exception e)
+            {
+                e.ToString();
+            }
+            return list;
+        }
+
+
 
         public string deletePemesanan(string IDPemesanan)
         {
@@ -85,11 +200,10 @@ namespace ServiceReservasi
 
         public string editPemesanan(string IDPemesanan, string NamaCustomer, string No_telpon)
         {
-            string a = "gagal";
+            string a = "Gagal";
             try
             {
-                string sql = "update into dbo.Pemesanan set nama_customer = '"+NamaCustomer+"', no_telepon = '"+No_telpon+"' " +
-                    " where id_reservasi = '"+IDPemesanan+"' ";
+                string sql = "update dbo.Pemesanan set nama_customer = '" + NamaCustomer + "', no_telepon = '" + No_telpon + "'" + " where id_reservasi = '" + IDPemesanan + "' ";
                 connection = new SqlConnection(constring);
                 com = new SqlCommand(sql, connection);
                 connection.Open();
@@ -117,7 +231,8 @@ namespace ServiceReservasi
                 com.ExecuteNonQuery();
                 connection.Close();
 
-                string sql2 = "update dbo.Lokasi set kuota = kuota - " + JumlahPemesanan + " where id_lokasi = '" + IDLokasi + "' ";
+                string sql2 = "update dbo.Lokasi set kuota = kuota - "+ JumlahPemesanan +" where id_lokasi = '" + IDLokasi + "' ";
+                connection = new SqlConnection(constring);
                 com = new SqlCommand(sql2, connection);
                 connection.Open();
                 com.ExecuteNonQuery();
@@ -167,5 +282,7 @@ namespace ServiceReservasi
         {
             throw new NotImplementedException();
         }
+
+        
     }
 }
